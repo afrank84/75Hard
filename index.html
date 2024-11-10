@@ -2,12 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>File Counter Grid</title>
+    <title>75 Hard Challenge Tracker</title>
     <style>
         .container {
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            margin: 5px 0;
         }
 
         .grid {
@@ -44,28 +60,101 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         .refresh-btn:hover {
             background-color: #007399;
         }
+
+        .counter-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .counter-box {
+            text-align: center;
+            padding: 15px;
+            background-color: white;
+            border-radius: 6px;
+            min-width: 200px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .counter-box h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .counter-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .days-left {
+            color: #FF9800;
+        }
+
+        .subtitle {
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .progress-note {
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>File Counter Visualization</h1>
-        <p>Displaying files from the "logs" folder (Max 74 squares)</p>
+        <div class="header">
+            <h1>75 Hard Challenge Tracking App</h1>
+            <p>Track your daily progress through the 75 Hard Challenge</p>
+            <p class="subtitle">Each completed day is marked by a .md file in your logs folder</p>
+        </div>
+        
+        <div class="counter-container">
+            <div class="counter-box">
+                <h2>Days Completed</h2>
+                <div class="counter-value" id="completed-days">0</div>
+            </div>
+            <div class="counter-box">
+                <h2>Days Remaining</h2>
+                <div class="counter-value days-left" id="remaining-days">74</div>
+            </div>
+        </div>
+
+        <div class="progress-note">
+            The grid below represents each day of your challenge. Green squares indicate completed days (verified by .md files in your logs folder).
+        </div>
+
         <button class="refresh-btn" onclick="checkFiles()">Refresh Count</button>
         <div class="grid">
             <!-- 74 squares will be generated here -->
         </div>
-        <div class="status" id="status">Waiting for file count...</div>
+        <div class="status" id="status">Waiting to count .md files in logs folder...</div>
     </div>
 
     <script>
+        const TOTAL_DAYS = 74;
+        
         // Create 74 squares
         const grid = document.querySelector('.grid');
-        for (let i = 0; i < 74; i++) {
+        for (let i = 0; i < TOTAL_DAYS; i++) {
             const square = document.createElement('div');
             square.className = 'square';
             grid.appendChild(square);
@@ -76,16 +165,17 @@
                 // In a real implementation, this would be replaced with actual file system access
                 // Since we can't access the file system directly in browser JavaScript,
                 // you would need to create a backend endpoint that returns the file count
-                const response = await fetch('/api/count-files?folder=logs');
+                const response = await fetch('/api/count-files?folder=logs&type=md');
                 const data = await response.json();
                 const fileCount = data.count;
 
                 updateGrid(fileCount);
+                updateCounters(fileCount);
                 document.getElementById('status').textContent = 
-                    `Found ${fileCount} files in the logs folder`;
+                    `Found ${fileCount} .md files in the logs folder`;
             } catch (error) {
                 document.getElementById('status').textContent = 
-                    'Error: Could not access files. Make sure backend is running.';
+                    'Error: Could not access .md files. Make sure backend is running.';
             }
         }
 
@@ -98,6 +188,13 @@
                     square.classList.remove('filled');
                 }
             });
+        }
+
+        function updateCounters(completedDays) {
+            const remainingDays = TOTAL_DAYS - completedDays;
+            
+            document.getElementById('completed-days').textContent = completedDays;
+            document.getElementById('remaining-days').textContent = remainingDays;
         }
 
         // Initial check
