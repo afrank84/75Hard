@@ -150,8 +150,11 @@
     </div>
 
     <script>
-        const TOTAL_DAYS = 74;
-        
+        const TOTAL_DAYS = 75;
+        const GITHUB_OWNER = 'afrank84'; // Add your GitHub username here
+        const GITHUB_REPO = '75Hard';  // Add your repository name here
+        const GITHUB_PATH = 'logs'; // Path to your logs folder
+    
         // Create 74 squares
         const grid = document.querySelector('.grid');
         for (let i = 0; i < TOTAL_DAYS; i++) {
@@ -159,26 +162,26 @@
             square.className = 'square';
             grid.appendChild(square);
         }
-
+    
         async function checkFiles() {
             try {
-                // In a real implementation, this would be replaced with actual file system access
-                // Since we can't access the file system directly in browser JavaScript,
-                // you would need to create a backend endpoint that returns the file count
-                const response = await fetch('/api/count-files?folder=logs&type=md');
-                const data = await response.json();
-                const fileCount = data.count;
-
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`);
+                const files = await response.json();
+                
+                // Count only .md files
+                const fileCount = files.filter(file => file.name.endsWith('.md')).length;
+    
                 updateGrid(fileCount);
                 updateCounters(fileCount);
                 document.getElementById('status').textContent = 
                     `Found ${fileCount} .md files in the logs folder`;
             } catch (error) {
                 document.getElementById('status').textContent = 
-                    'Error: Could not access .md files. Make sure backend is running.';
+                    'Error: Could not access GitHub repository. Make sure the repository and folder exist and are public.';
+                console.error('Error:', error);
             }
         }
-
+    
         function updateGrid(count) {
             const squares = document.querySelectorAll('.square');
             squares.forEach((square, index) => {
@@ -189,14 +192,14 @@
                 }
             });
         }
-
+    
         function updateCounters(completedDays) {
             const remainingDays = TOTAL_DAYS - completedDays;
             
             document.getElementById('completed-days').textContent = completedDays;
             document.getElementById('remaining-days').textContent = remainingDays;
         }
-
+    
         // Initial check
         checkFiles();
     </script>
