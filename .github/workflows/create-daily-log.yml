@@ -1,0 +1,45 @@
+name: Create Daily Log
+on:
+  workflow_dispatch:  # This enables manual triggering
+
+jobs:
+  create-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+
+      - name: Create logs directory if it doesn't exist
+        run: mkdir -p logs
+
+      - name: Create daily log file
+        run: |
+          # Get current date and time in a readable format
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          DATE=$(date '+%Y-%m-%d')
+          
+          # Create the markdown file
+          cat > "logs/$DATE.md" << EOL
+          # Daily Log - $TIMESTAMP
+
+          ## 75 Hard Tasks Completed Today:
+
+          - [ ] First 45-minute workout (preferably outside)
+          - [ ] Second 45-minute workout
+          - [ ] Follow a diet with zero cheat meals
+          - [ ] Drink 1 gallon of water
+          - [ ] Read 10 pages of a non-fiction book
+          - [ ] Take a progress picture
+          - [ ] No alcohol
+          EOL
+
+      - name: Commit and push
+        run: |
+          git add logs/
+          git commit -m "Add daily log for $(date '+%Y-%m-%d')"
+          git push
